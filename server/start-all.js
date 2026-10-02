@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process';
 import path from 'node:path';
+import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -12,20 +13,31 @@ console.log('\x1b[36m====================================================\x1b[0m
 console.log('⚡ Starting SQLite Backend & Vue 2 POS Terminal...\n');
 
 const isWin = process.platform === 'win32';
+const nodeDir = path.dirname(process.execPath);
 
-// 1. Start SQLite Backend Server
+// Ensure nodeDir is in PATH
+const currentPath = process.env.PATH || '';
+const newPath = currentPath.includes(nodeDir) ? currentPath : `${nodeDir};${currentPath}`;
+const env = { ...process.env, PATH: newPath };
+
+// 1. Start SQLite Backend Server (Port 3001)
 const backendProcess = spawn(process.execPath, ['server/index.js'], {
   cwd: rootDir,
   stdio: 'inherit',
-  env: process.env
+  env
 });
 
-// 2. Start Vite Dev Server
-const npmCmd = isWin ? 'npm.cmd' : 'npm';
+// 2. Start Vite Dev Server (Port 3000)
+let npmCmd = 'npm';
+if (isWin) {
+  const directNpm = path.join(nodeDir, 'npm.cmd');
+  npmCmd = fs.existsSync(directNpm) ? `"${directNpm}"` : 'npm.cmd';
+}
+
 const frontendProcess = spawn(npmCmd, ['run', 'dev'], {
   cwd: rootDir,
   stdio: 'inherit',
-  env: process.env,
+  env,
   shell: true
 });
 
