@@ -97,3 +97,9 @@ The SQLite database (`server/database.sqlite`) is pre-seeded with clean, generic
   - <kbd>F8</kbd> Void Current Transaction
   - <kbd>F9</kbd> Daily Sales Report & Audit Summary
   - <kbd>ESC</kbd> Close Modals / Cancel
+
+### 5. 🔄 Automatic Integration with NovaMetrics Financial Dashboard
+NovaPOS is architected for seamless commercial ecosystems:
+- **Unified SQLite Relational Database**: All transactions (`sales` and `sale_items`) are persisted to `server/database.sqlite` with SQLite **WAL Mode (Write-Ahead Logging)** enabled (`PRAGMA journal_mode = WAL;`).
+- **Live Multi-Process Concurrency**: NovaPOS operates 100% independently. When the companion **[NovaMetrics Financial Dashboard](https://github.com/cloud-humberto/WEB_DASHBOARD)** is launched, it automatically discovers and connects to this same SQLite database.
+- **Zero-Latency Inflow Analytics**: Every retail checkout completed on this POS terminal (`[F4] Tender`) immediately reflects on NovaMetrics—updating Gross Inflow, tender mix, hourly basket averages, and net profit margins in real time without any manual export/import steps.
