@@ -10,6 +10,9 @@ dist/
 .DS_Store
 Thumbs.db
 *.local
+.env
+.env.*
+!.env.example
 *.sqlite-shm
 *.sqlite-wal
 *.sqlite-journal

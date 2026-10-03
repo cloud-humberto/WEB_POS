@@ -2,26 +2,34 @@ import express from 'express';
 import cors from 'cors';
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { db, initDatabase, hashPin } from './db.js';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { initDatabase, queryAll, queryOne, execute, hashPin, getDatabasePath, isUsingTurso } from './db.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const distPath = path.resolve(__dirname, '../dist');
 
-// Initialize SQLite database tables & seeds
-initDatabase();
-
 const app = express();
-const PORT = 3001;
+const PORT = Number(process.env.PORT) || 3001;
 
 app.use(cors());
 app.use(express.json());
 
+// Database Auto-Initialization Middleware
+app.use('/api', async (req, res, next) => {
+  try {
+    await initDatabase();
+    next();
+  } catch (err) {
+    console.error('NovaPOS database initialization failed:', err);
+    res.status(500).json({ error: 'Database initialization failed: ' + err.message });
+  }
+});
+
 // --- AUTH & BADGE LOGIN API ---
 
 // 1. Login with Employee Badge Barcode or Username + PIN
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
   try {
     const { identifier, pin } = req.body;
     if (!identifier || !pin) {
@@ -32,15 +40,12 @@ app.post('/api/auth/login', (req, res) => {
     const pinHash = hashPin(pin);
 
     // Search user in SQL by badge_code OR username
-    const query = db.prepare(`
+    const formattedBadge = cleanId.startsWith('BADGE-') ? cleanId : `BADGE-${cleanId}`;
+    const user = await queryOne(`
       SELECT id, badge_code, username, name, role, max_discount, pin_hash
       FROM users
       WHERE badge_code = ? OR username = ? OR badge_code = ?
-    `);
-
-    // Matches 'BADGE-9001' or '9001'
-    const formattedBadge = cleanId.startsWith('BADGE-') ? cleanId : `BADGE-${cleanId}`;
-    const user = query.get(cleanId, cleanId.toLowerCase(), formattedBadge);
+    `, [cleanId, cleanId.toLowerCase(), formattedBadge]);
 
     if (!user) {
       return res.status(401).json({ error: `Badge or user "${cleanId}" not registered in SQL database.` });
@@ -66,13 +71,13 @@ app.post('/api/auth/login', (req, res) => {
 });
 
 // 2. List all employee badges/users
-app.get('/api/auth/users', (req, res) => {
+app.get('/api/auth/users', async (req, res) => {
   try {
-    const users = db.prepare(`
+    const users = await queryAll(`
       SELECT id, badge_code, username, name, role, max_discount, created_at
       FROM users
       ORDER BY id ASC
-    `).all();
+    `);
     res.json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -80,7 +85,7 @@ app.get('/api/auth/users', (req, res) => {
 });
 
 // 3. Register a new user/badge (Admin only)
-app.post('/api/auth/users', (req, res) => {
+app.post('/api/auth/users', async (req, res) => {
   try {
     const { badge_code, username, name, pin, role, max_discount } = req.body;
     if (!username || !pin || !name) {
@@ -91,12 +96,11 @@ app.post('/api/auth/users', (req, res) => {
     const finalRole = role || 'cashier';
     const finalDiscount = max_discount !== undefined ? max_discount : (finalRole === 'admin' ? 50.0 : 10.0);
 
-    const stmt = db.prepare(`
+    const result = await execute(`
       INSERT INTO users (badge_code, username, name, pin_hash, role, max_discount)
       VALUES (?, ?, ?, ?, ?, ?)
-    `);
+    `, [finalBadge, username.toLowerCase().trim(), name.trim(), hashPin(pin), finalRole, finalDiscount]);
 
-    const result = stmt.run(finalBadge, username.toLowerCase().trim(), name.trim(), hashPin(pin), finalRole, finalDiscount);
     res.json({
       success: true,
       id: Number(result.lastInsertRowid),
@@ -112,27 +116,24 @@ app.post('/api/auth/users', (req, res) => {
 });
 
 // 4. Delete user (Admin only)
-app.delete('/api/auth/users/:id', (req, res) => {
+app.delete('/api/auth/users/:id', async (req, res) => {
   try {
     const rawId = req.params.id;
     const numId = Number(rawId);
 
-    db.exec('BEGIN TRANSACTION');
     if (!isNaN(numId) && numId > 0) {
-      db.prepare('UPDATE sales SET user_id = NULL WHERE user_id = ?').run(numId);
-      db.prepare('DELETE FROM users WHERE id = ?').run(numId);
+      await execute('UPDATE sales SET user_id = NULL WHERE user_id = ?', [numId]);
+      await execute('DELETE FROM users WHERE id = ?', [numId]);
     } else {
-      const targetUser = db.prepare('SELECT id FROM users WHERE username = ?').get(rawId);
+      const targetUser = await queryOne('SELECT id FROM users WHERE username = ?', [rawId]);
       if (targetUser) {
-        db.prepare('UPDATE sales SET user_id = NULL WHERE user_id = ?').run(targetUser.id);
-        db.prepare('DELETE FROM users WHERE id = ?').run(targetUser.id);
+        await execute('UPDATE sales SET user_id = NULL WHERE user_id = ?', [targetUser.id]);
+        await execute('DELETE FROM users WHERE id = ?', [targetUser.id]);
       }
     }
-    db.exec('COMMIT');
 
     res.json({ success: true, deletedId: rawId });
   } catch (err) {
-    db.exec('ROLLBACK');
     console.error('Delete user error:', err);
     res.status(500).json({ error: err.message });
   }
@@ -141,9 +142,9 @@ app.delete('/api/auth/users/:id', (req, res) => {
 // --- PRODUCTS API (SQL CRUD) ---
 
 // 5. Get all products
-app.get('/api/products', (req, res) => {
+app.get('/api/products', async (req, res) => {
   try {
-    const products = db.prepare('SELECT * FROM products ORDER BY name ASC').all();
+    const products = await queryAll('SELECT * FROM products ORDER BY name ASC');
     res.json(products);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -151,28 +152,26 @@ app.get('/api/products', (req, res) => {
 });
 
 // 6. Add new product (Admin only)
-app.post('/api/products', (req, res) => {
+app.post('/api/products', async (req, res) => {
   try {
     const { barcode, name, price, stock, category, unit } = req.body;
     if (!barcode || !name || price === undefined) {
       return res.status(400).json({ error: 'Missing product data.' });
     }
 
-    const stmt = db.prepare(`
+    const result = await execute(`
       INSERT INTO products (barcode, name, price, stock, category, unit)
       VALUES (?, ?, ?, ?, ?, ?)
-    `);
-
-    const result = stmt.run(
+    `, [
       String(barcode).trim(),
       name.trim(),
       Number(price),
       Number(stock) || 0,
       category || 'General',
       unit || 'EA'
-    );
+    ]);
 
-    const newProduct = db.prepare('SELECT * FROM products WHERE id = ?').get(result.lastInsertRowid);
+    const newProduct = await queryOne('SELECT * FROM products WHERE id = ?', [result.lastInsertRowid]);
     res.json({ success: true, product: newProduct });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -180,20 +179,20 @@ app.post('/api/products', (req, res) => {
 });
 
 // 7. Delete product (Admin only)
-app.delete('/api/products/:id', (req, res) => {
+app.delete('/api/products/:id', async (req, res) => {
   try {
     const id = Number(req.params.id);
-    db.prepare('DELETE FROM products WHERE id = ?').run(id);
+    await execute('DELETE FROM products WHERE id = ?', [id]);
     res.json({ success: true, deletedId: id });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// --- SALES TRANSACTION API (SQL ACID Transactions) ---
+// --- SALES TRANSACTION API ---
 
 // 8. Finalize Sale
-app.post('/api/sales', (req, res) => {
+app.post('/api/sales', async (req, res) => {
   try {
     const {
       sale_number,
@@ -233,17 +232,12 @@ app.post('/api/sales', (req, res) => {
     const finalReceived = Number(received_amount !== undefined ? received_amount : (receivedAmount !== undefined ? receivedAmount : finalTotal));
     const finalChange = Number(change_amount !== undefined ? change_amount : (changeAmount !== undefined ? changeAmount : 0));
 
-    // Begin SQL Transaction
-    db.exec('BEGIN TRANSACTION');
-
-    const insertSaleStmt = db.prepare(`
+    const saleResult = await execute(`
       INSERT INTO sales (
         sale_number, user_id, operator_name, subtotal, discount_total,
         tax_amount, total_amount, payment_method, received_amount, change_amount
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    const saleResult = insertSaleStmt.run(
+    `, [
       finalSaleNumber,
       finalUserId,
       finalOperator,
@@ -254,25 +248,17 @@ app.post('/api/sales', (req, res) => {
       finalMethod,
       finalReceived,
       finalChange
-    );
+    ]);
 
     const saleId = Number(saleResult.lastInsertRowid);
 
-    const insertItemStmt = db.prepare(`
-      INSERT INTO sale_items (
-        sale_id, product_id, name, barcode, qty, unit_price, discount, total
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    const updateStockStmt = db.prepare(`
-      UPDATE products
-      SET stock = MAX(0, stock - ?)
-      WHERE id = ?
-    `);
-
     for (const item of items) {
       const prodId = item.productId || item.product_id || item.id || null;
-      insertItemStmt.run(
+      await execute(`
+        INSERT INTO sale_items (
+          sale_id, product_id, name, barcode, qty, unit_price, discount, total
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `, [
         saleId,
         prodId,
         item.name || 'Item',
@@ -281,18 +267,15 @@ app.post('/api/sales', (req, res) => {
         Number(item.price || item.unit_price || 0),
         Number(item.discount || 0),
         Number(item.total || 0)
-      );
+      ]);
 
       if (prodId) {
-        updateStockStmt.run(Number(item.qty || 1), prodId);
+        await execute('UPDATE products SET stock = MAX(0, stock - ?) WHERE id = ?', [Number(item.qty || 1), prodId]);
       }
     }
 
-    // Commit SQL Transaction
-    db.exec('COMMIT');
-
-    const savedSale = db.prepare('SELECT * FROM sales WHERE id = ?').get(saleId);
-    const savedItems = db.prepare('SELECT * FROM sale_items WHERE sale_id = ?').all(saleId);
+    const savedSale = await queryOne('SELECT * FROM sales WHERE id = ?', [saleId]);
+    const savedItems = await queryAll('SELECT * FROM sale_items WHERE sale_id = ?', [saleId]);
 
     res.json({
       success: true,
@@ -302,20 +285,24 @@ app.post('/api/sales', (req, res) => {
       }
     });
   } catch (err) {
-    db.exec('ROLLBACK');
-    console.error('SQL Transaction Error:', err);
+    console.error('Sale transaction error:', err);
     res.status(500).json({ error: err.message });
   }
 });
 
 // 9. Get Sales History
-app.get('/api/sales', (req, res) => {
+app.get('/api/sales', async (req, res) => {
   try {
-    const sales = db.prepare('SELECT * FROM sales ORDER BY id DESC LIMIT 100').all();
-    const getItems = db.prepare('SELECT * FROM sale_items WHERE sale_id = ?');
+    const sales = await queryAll('SELECT * FROM sales ORDER BY id DESC LIMIT 100');
+    const allItems = await queryAll('SELECT * FROM sale_items ORDER BY id ASC');
+    const itemsBySale = new Map();
+    for (const it of allItems) {
+      if (!itemsBySale.has(it.sale_id)) itemsBySale.set(it.sale_id, []);
+      itemsBySale.get(it.sale_id).push(it);
+    }
     const result = sales.map(s => ({
       ...s,
-      items: getItems.all(s.id)
+      items: itemsBySale.get(s.id) || []
     }));
     res.json(result);
   } catch (err) {
@@ -323,34 +310,31 @@ app.get('/api/sales', (req, res) => {
   }
 });
 
-// 10. Daily Report & Analytics from SQL
-app.get('/api/sales/report', (req, res) => {
+// 10. Daily Report & Analytics
+const handleReport = async (req, res) => {
   try {
-    // Total gross sales and ticket average in SQL
-    const summary = db.prepare(`
+    const summary = await queryOne(`
       SELECT 
         COALESCE(SUM(total_amount), 0) AS total_revenue,
         COUNT(*) AS total_orders,
         COALESCE(AVG(total_amount), 0) AS avg_ticket
       FROM sales
-    `).get();
+    `);
 
-    // Tender breakdown
-    const byTender = db.prepare(`
+    const byTender = await queryAll(`
       SELECT payment_method, COALESCE(SUM(total_amount), 0) AS amount
       FROM sales
       GROUP BY payment_method
-    `).all();
+    `);
 
-    // Recent transactions with item count
-    const recentSales = db.prepare(`
+    const recentSales = await queryAll(`
       SELECT 
         s.*,
         (SELECT COUNT(*) FROM sale_items WHERE sale_id = s.id) AS item_count
       FROM sales s
       ORDER BY s.id DESC
       LIMIT 50
-    `).all();
+    `);
 
     res.json({
       summary,
@@ -360,7 +344,10 @@ app.get('/api/sales/report', (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-});
+};
+
+app.get('/api/sales/report', handleReport);
+app.get('/api/reports/daily', handleReport);
 
 // Serve production frontend assets if built
 if (fs.existsSync(distPath)) {
@@ -371,9 +358,17 @@ if (fs.existsSync(distPath)) {
   });
 }
 
-app.listen(PORT, () => {
-  console.log(`⚡ NovaPOS SQL Backend Server running on http://localhost:${PORT}`);
-  if (fs.existsSync(distPath)) {
-    console.log(`💻 Serving production POS frontend at http://localhost:${PORT}`);
-  }
-});
+export default app;
+
+const isMainModule = process.argv[1]
+  && pathToFileURL(path.resolve(process.argv[1])).href === import.meta.url;
+
+if (isMainModule) {
+  app.listen(PORT, () => {
+    console.log(`⚡ NovaPOS API Server running on http://localhost:${PORT}`);
+    console.log(`📂 Database engine: ${isUsingTurso() ? 'Turso libSQL Cloud' : 'Local SQLite (' + getDatabasePath() + ')'}`);
+    if (fs.existsSync(distPath)) {
+      console.log(`💻 Serving production POS frontend at http://localhost:${PORT}`);
+    }
+  });
+}

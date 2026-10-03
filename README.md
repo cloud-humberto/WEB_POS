@@ -100,6 +100,25 @@ The SQLite database (`server/database.sqlite`) is pre-seeded with clean, generic
 
 ### 5. 🔄 Automatic Integration with NovaMetrics Financial Dashboard
 NovaPOS is architected for seamless commercial ecosystems:
-- **Unified SQLite Relational Database**: All transactions (`sales` and `sale_items`) are persisted to `server/database.sqlite` with SQLite **WAL Mode (Write-Ahead Logging)** enabled (`PRAGMA journal_mode = WAL;`).
-- **Live Multi-Process Concurrency**: NovaPOS operates 100% independently. When the companion **[NovaMetrics Financial Dashboard](https://github.com/cloud-humberto/WEB_DASHBOARD)** is launched, it automatically discovers and connects to this same SQLite database.
+- **Unified Relational Database**: All transactions (`sales` and `sale_items`) are persisted to `server/database.sqlite` (or cloud Turso libSQL) with SQLite **WAL Mode (Write-Ahead Logging)** enabled (`PRAGMA journal_mode = WAL;`).
+- **Live Multi-Process Concurrency**: NovaPOS operates 100% independently. When the companion **[NovaMetrics Financial Dashboard](https://github.com/cloud-humberto/WEB_DASHBOARD)** is launched, it automatically connects to this same database.
 - **Zero-Latency Inflow Analytics**: Every retail checkout completed on this POS terminal (`[F4] Tender`) immediately reflects on NovaMetrics—updating Gross Inflow, tender mix, hourly basket averages, and net profit margins in real time without any manual export/import steps.
+
+---
+
+## ☁️ Turso libSQL and Vercel Serverless Deployment
+
+NovaPOS supports 100% serverless cloud hosting on **Vercel** with **Turso libSQL**:
+
+- **Serverless API**: The Express backend is exposed via Vercel Serverless Functions in `api/` and configured via `vercel.json`.
+- **Hybrid Storage Engine**: When `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` environment variables are present, NovaPOS connects directly to Turso libSQL in the cloud. When omitted during local desktop execution, it automatically falls back to local SQLite (`server/database.sqlite`).
+- **Unified Cloud Ecosystem**: When both NovaPOS and NovaMetrics are deployed on Vercel sharing the same Turso credentials, cash register sales from NovaPOS flow into NovaMetrics in real time.
+
+### Deploying to Vercel:
+1. Push this repository to GitHub.
+2. In Vercel, import the repository with Framework Preset **Vite**.
+3. Under **Project Settings → Environment Variables**, add:
+   - `TURSO_DATABASE_URL`: `libsql://your-database-name-your-org.turso.io`
+   - `TURSO_AUTH_TOKEN`: your Turso database auth token
+4. Deploy! The frontend is built to `dist/` and all `/api/*` requests route serverless to the backend.
+
