@@ -115,7 +115,6 @@
 import { mapGetters, mapActions } from 'vuex';
 import { formatCurrency } from '@/utils/formatters';
 import { playSuccess, playError } from '@/utils/audio';
-import { openReceiptPdfInNewTab } from '@/utils/pdfReceipt';
 
 export default {
   name: 'ModalCheckout',
@@ -180,19 +179,6 @@ export default {
         return;
       }
 
-      // Pre-open a blank tab in the synchronous click context to guarantee browser doesn't block popup
-      let pdfTab = null;
-      try {
-        pdfTab = window.open('', '_blank');
-        if (pdfTab && pdfTab.document) {
-          pdfTab.document.open();
-          pdfTab.document.write('<!DOCTYPE html><html><head><title>Receipt PDF</title></head><body style="font-family:monospace;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;"><div>GENERATING 80MM CUSTOMER RECEIPT PDF...</div></body></html>');
-          pdfTab.document.close();
-        }
-      } catch (e) {
-        console.warn('Could not pre-open window:', e);
-      }
-
       const paymentInfo = {
         method: this.selectedMethod,
         receivedAmount: this.selectedMethod === 'cash' ? Number(this.receivedAmount) : this.totalAmount,
@@ -202,14 +188,7 @@ export default {
       const completedSale = await this.finishSale(paymentInfo);
       playSuccess();
 
-      // Render and route PDF to the prepared new tab
-      try {
-        openReceiptPdfInNewTab(completedSale, pdfTab);
-      } catch (err) {
-        console.error('PDF error:', err);
-      }
-
-      // Emits sale-completed so the receipt is shown right on screen
+      // Emits sale-completed so the receipt modal is displayed on screen
       this.$emit('sale-completed', completedSale);
     },
 
