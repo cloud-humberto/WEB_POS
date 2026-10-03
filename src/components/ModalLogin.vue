@@ -446,4 +446,92 @@ export default {
   padding: 1px 4px;
   border-radius: 2px;
 }
+
+@media (max-width: 640px) {
+  .login-modal {
+    width: 96vw;
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+  .login-body {
+    padding: 12px;
+  }
+  .operator-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .pad-btn {
+    padding: 12px 0;
+    font-size: 1.1rem;
+    touch-action: manipulation;
+  }
+  .btn-authorize {
+    padding: 14px;
+    font-size: 0.85rem;
+    min-height: 48px;
+    touch-action: manipulation;
+  }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .login-modal {
+    max-height: 96vh;
+    max-height: 96dvh;
+    overflow-y: auto;
+    width: 95vw;
+    max-width: 680px;
+  }
+  .login-header {
+    padding: 4px 10px;
+  }
+  .login-subtitle {
+    display: none;
+  }
+  .login-body {
+    padding: 6px 10px;
+    display: grid;
+    grid-template-columns: 45% 55%;
+    gap: 8px;
+  }
+  .operator-section {
+    margin-bottom: 0;
+  }
+  .operator-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .operator-btn {
+    padding: 4px 6px;
+  }
+  .op-btn-name {
+    font-size: 0.78rem;
+  }
+  .op-btn-desc {
+    display: none;
+  }
+  .form-row {
+    gap: 1px;
+  }
+  .input-field {
+    padding: 4px 8px;
+    font-size: 0.82rem;
+  }
+  .keypad-grid {
+    margin: 2px 0;
+    gap: 2px;
+  }
+  .pad-btn {
+    padding: 4px 0;
+    font-size: 0.82rem;
+  }
+  .btn-authorize {
+    padding: 6px;
+    font-size: 0.75rem;
+  }
+  .login-footer {
+    padding: 4px 10px;
+    font-size: 0.6rem;
+  }
+}
 </style>

@@ -348,4 +348,77 @@ export default {
   font-size: 1.05rem;
   font-weight: 800;
 }
+
+@media (max-width: 640px) {
+  .customer-strip {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .customer-input-group {
+    width: 100%;
+  }
+  .btn-discount-trigger {
+    width: 100%;
+    text-align: center;
+    padding: 6px 10px;
+  }
+  .total-highlight-box {
+    padding: 10px 12px;
+  }
+  .highlight-value {
+    font-size: 1.5rem;
+  }
+  .action-buttons-group {
+    flex-direction: column;
+  }
+  .btn-action-pay {
+    min-height: 48px;
+    padding: 12px 16px;
+    touch-action: manipulation;
+  }
+  .btn-action-cancel {
+    justify-content: center;
+    padding: 8px 12px;
+  }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .pos-totals-card {
+    padding: 6px 10px;
+    gap: 4px;
+  }
+  .customer-strip {
+    padding-bottom: 2px;
+    margin-bottom: 2px;
+  }
+  .phone-input {
+    font-size: 0.72rem;
+  }
+  .totals-breakdown {
+    padding: 2px 0;
+    font-size: 0.72rem;
+  }
+  .total-highlight-box {
+    padding: 4px 8px;
+  }
+  .highlight-value {
+    font-size: 1.2rem;
+  }
+  .highlight-label {
+    font-size: 0.7rem;
+  }
+  .btn-action-pay {
+    padding: 6px 12px;
+  }
+  .pay-text {
+    font-size: 0.78rem;
+  }
+  .pay-amount {
+    font-size: 0.88rem;
+  }
+  .btn-action-cancel {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+  }
+}
 </style>

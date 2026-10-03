@@ -506,4 +506,108 @@ export default {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+@media (max-width: 640px) {
+  .checkout-modal {
+    width: 98vw;
+  }
+  .modal-body {
+    padding: 10px;
+    overflow-y: auto;
+    max-height: 70vh;
+  }
+  .payment-methods-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .method-btn {
+    padding: 8px 10px;
+  }
+  .quick-cash-chips {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .chip-btn {
+    flex: 1 1 28%;
+    padding: 8px 4px;
+    text-align: center;
+  }
+  .modal-footer {
+    flex-direction: column-reverse;
+    gap: 6px;
+  }
+  .btn-confirm-pay, .btn-cancel {
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+  }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .checkout-modal {
+    max-height: 96vh;
+    max-height: 96dvh;
+    width: 95vw;
+  }
+  .modal-header {
+    padding: 4px 10px;
+  }
+  .modal-subtitle {
+    display: none;
+  }
+  .modal-body {
+    padding: 6px 10px;
+    display: grid;
+    grid-template-columns: 40% 60%;
+    gap: 8px;
+    max-height: calc(96vh - 80px);
+    overflow-y: auto;
+  }
+  .payment-methods-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 0;
+  }
+  .method-btn {
+    padding: 4px 8px;
+    font-size: 0.72rem;
+  }
+  .total-to-pay-box {
+    padding: 4px 8px;
+    margin-bottom: 4px;
+  }
+  .cash-input-wrap {
+    padding: 2px 6px;
+    margin-bottom: 4px;
+  }
+  .cash-input {
+    font-size: 1rem;
+  }
+  .quick-cash-chips {
+    margin-bottom: 4px;
+    gap: 3px;
+  }
+  .chip-btn {
+    padding: 2px 6px;
+    font-size: 0.7rem;
+  }
+  .change-box {
+    padding: 4px 8px;
+  }
+  .change-val {
+    font-size: 1rem;
+  }
+  .card-panel {
+    padding: 10px;
+  }
+  .modal-footer {
+    padding: 4px 10px;
+  }
+  .btn-confirm-pay, .btn-cancel {
+    padding: 5px 12px;
+    font-size: 0.75rem;
+  }
+}
 </style>

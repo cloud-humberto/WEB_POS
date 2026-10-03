@@ -368,4 +368,51 @@ export default {
 .btn-action-text.del:hover {
   background: #fee2e2;
 }
+
+@media (max-width: 640px) {
+  .cart-row {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+  .btn-step {
+    width: 26px;
+    height: 26px;
+    font-size: 0.9rem;
+    touch-action: manipulation;
+  }
+  .qty-val {
+    padding: 0 8px;
+    font-size: 0.85rem;
+  }
+  .item-title {
+    font-size: 0.85rem;
+  }
+  .item-total-value {
+    font-size: 1rem;
+  }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .cart-header {
+    padding: 6px 10px;
+  }
+  .cart-items-wrapper {
+    padding: 4px;
+  }
+  .cart-row {
+    padding: 4px 6px;
+    gap: 6px;
+  }
+  .item-title {
+    font-size: 0.75rem;
+  }
+  .btn-step {
+    width: 20px;
+    height: 20px;
+    font-size: 0.75rem;
+  }
+  .item-total-value {
+    font-size: 0.85rem;
+  }
+}
 </style>

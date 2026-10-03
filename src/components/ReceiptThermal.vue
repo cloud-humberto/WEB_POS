@@ -179,7 +179,10 @@ export default {
 
 <style scoped>
 .receipt-modal {
-  width: 440px;
+  width: 100%;
+  max-width: 440px;
+  max-height: 92vh;
+  max-height: 92dvh;
   background-color: #0f172a;
   border: 1px solid #334155;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
@@ -386,6 +389,34 @@ export default {
   }
   .no-print {
     display: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .receipt-modal {
+    width: 96vw;
+  }
+  .receipt-actions-bar {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .actions-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .receipt-modal {
+    max-height: 96vh;
+    max-height: 96dvh;
+  }
+  .receipt-actions-bar {
+    padding: 4px 8px;
+  }
+  .receipt-scroll {
+    max-height: calc(96vh - 45px);
+    padding: 6px;
   }
 }
 </style>

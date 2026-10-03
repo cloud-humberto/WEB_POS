@@ -264,4 +264,42 @@ export default {
   font-weight: 700;
   cursor: pointer;
 }
+
+@media (max-width: 640px) {
+  .input-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+  .main-barcode-input {
+    font-size: 0.95rem;
+  }
+  .btn-enter {
+    padding: 8px 10px;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .product-input-card {
+    padding: 6px 10px;
+  }
+  .input-header {
+    margin-bottom: 2px;
+  }
+  .input-tip {
+    display: none;
+  }
+  .input-wrapper {
+    padding: 1px 4px;
+  }
+  .main-barcode-input {
+    font-size: 0.88rem;
+    padding: 3px 2px;
+  }
+  .btn-enter {
+    padding: 4px 8px;
+    font-size: 0.72rem;
+  }
+}
 </style>

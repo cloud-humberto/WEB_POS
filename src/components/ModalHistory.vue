@@ -322,4 +322,51 @@ export default {
   font-size: 0.72rem;
   font-weight: 700;
 }
+
+@media (max-width: 640px) {
+  .history-modal {
+    width: 98vw;
+    max-height: 92vh;
+  }
+  .report-summary-bar {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .modal-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .history-table th:nth-child(4), .history-table td:nth-child(4) {
+    display: none;
+  }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .history-modal {
+    max-height: 96vh;
+    max-height: 96dvh;
+    width: 95vw;
+  }
+  .modal-header {
+    padding: 4px 10px;
+  }
+  .modal-subtitle {
+    display: none;
+  }
+  .report-summary-bar {
+    padding: 4px 8px;
+    gap: 8px;
+  }
+  .modal-table-wrap {
+    max-height: calc(96vh - 90px);
+    overflow-y: auto;
+  }
+  .history-table th, .history-table td {
+    padding: 4px 6px;
+    font-size: 0.7rem;
+  }
+  .modal-footer {
+    padding: 4px 10px;
+  }
+}
 </style>

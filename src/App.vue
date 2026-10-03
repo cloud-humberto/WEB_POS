@@ -270,6 +270,7 @@ export default {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
   width: 100vw;
   background-color: var(--bg-app);
   overflow: hidden;
@@ -307,11 +308,12 @@ export default {
   background: #f1f5f9;
   border: 1px solid #cbd5e1;
   color: #475569;
-  padding: 2px 5px;
+  padding: 3px 6px;
   border-radius: 2px;
   cursor: pointer;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: 700;
+  touch-action: manipulation;
 }
 
 .slot-btn:hover {
@@ -331,13 +333,78 @@ export default {
   background: #fee2e2;
 }
 
+/* Tablet & Mobile Portrait */
 @media (max-width: 1024px) {
-  .pos-workspace {
-    grid-template-columns: 1fr;
+  .pos-app-layout {
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
-  body {
+
+  .pos-workspace {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 10px 8px;
+    overflow-y: visible;
+  }
+
+  .pos-left-column {
+    display: contents;
+  }
+
+  .pos-left-column > :nth-child(1) { order: 1; }
+  .pos-right-column > :nth-child(1) { order: 2; }
+  .pos-right-column > :nth-child(2) { order: 3; }
+  .pos-left-column > :nth-child(2) { order: 4; }
+
+  .pos-right-column {
+    display: contents;
+  }
+
+  .slot-btn {
+    padding: 5px 8px;
+    font-size: 0.75rem;
+  }
+}
+
+/* Mobile Landscape (Smartphone held horizontally: height <= 520px) */
+@media (max-height: 520px) and (orientation: landscape) {
+  .pos-app-layout {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .pos-workspace {
+    display: grid !important;
+    grid-template-columns: 50% 50% !important;
+    gap: 6px;
+    padding: 6px 8px;
+    overflow: hidden;
+    height: calc(100vh - 42px);
+    height: calc(100dvh - 42px);
+    min-height: 0;
+  }
+
+  .pos-left-column {
+    display: flex !important;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 0;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .pos-right-column {
+    display: flex !important;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
 </style>

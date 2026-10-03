@@ -281,4 +281,125 @@ export default {
   font-size: 0.68rem;
   color: #94a3b8;
 }
+
+/* Tablet & Mobile Portrait (max-width: 768px) */
+@media (max-width: 768px) {
+  .pos-header {
+    height: auto;
+    padding: 8px 10px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .pos-brand {
+    gap: 8px;
+    flex-wrap: wrap;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .terminal-badge {
+    padding: 3px 6px;
+    gap: 5px;
+  }
+
+  .station-label {
+    font-size: 0.72rem;
+  }
+
+  .operator-info {
+    font-size: 0.72rem;
+  }
+
+  .pos-clock {
+    margin-left: auto;
+  }
+
+  .clock-time {
+    font-size: 0.85rem;
+  }
+
+  .clock-date {
+    display: none;
+  }
+
+  .pos-shortcuts {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+    justify-content: flex-start;
+    scrollbar-width: none;
+  }
+
+  .pos-shortcuts::-webkit-scrollbar {
+    display: none;
+  }
+
+  .key-btn {
+    flex-shrink: 0;
+    padding: 6px 10px;
+    font-size: 0.75rem;
+  }
+}
+
+/* Mobile Landscape (height <= 520px) */
+@media (max-height: 520px) and (orientation: landscape) {
+  .pos-header {
+    height: 40px;
+    padding: 0 10px;
+    gap: 8px;
+    flex-wrap: nowrap;
+  }
+
+  .pos-brand {
+    gap: 6px;
+  }
+
+  .terminal-badge {
+    padding: 2px 6px;
+    gap: 4px;
+  }
+
+  .station-label {
+    font-size: 0.7rem;
+  }
+
+  .op-label, .op-name {
+    font-size: 0.7rem;
+  }
+
+  .role-pill {
+    display: none;
+  }
+
+  .pos-shortcuts {
+    gap: 4px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+  }
+  .pos-shortcuts::-webkit-scrollbar {
+    display: none;
+  }
+
+  .key-btn {
+    padding: 2px 6px;
+    font-size: 0.7rem;
+    gap: 4px;
+  }
+
+  .key-btn .kbd {
+    font-size: 0.62rem;
+    padding: 1px 3px;
+  }
+
+  .clock-time {
+    font-size: 0.8rem;
+  }
+
+  .clock-date {
+    display: none;
+  }
+}
 </style>

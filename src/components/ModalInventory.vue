@@ -512,4 +512,69 @@ export default {
   font-size: 0.72rem;
   font-weight: 700;
 }
+
+@media (max-width: 640px) {
+  .inventory-modal {
+    width: 98vw;
+    max-height: 92vh;
+  }
+  .modal-body {
+    padding: 10px;
+    max-height: 75vh;
+    overflow-y: auto;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .inventory-modal {
+    max-height: 96vh;
+    max-height: 96dvh;
+    width: 95vw;
+  }
+  .modal-header {
+    padding: 4px 10px;
+  }
+  .modal-subtitle {
+    display: none;
+  }
+  .modal-tabs {
+    padding: 2px 10px;
+  }
+  .tab-btn {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+  }
+  .modal-body {
+    padding: 6px 10px;
+    max-height: calc(96vh - 80px);
+    overflow-y: auto;
+  }
+  .form-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+  .input-sm {
+    padding: 3px 6px;
+    font-size: 0.75rem;
+  }
+  .btn-save {
+    padding: 4px 8px;
+    font-size: 0.72rem;
+  }
+  .table-container {
+    max-height: 120px;
+  }
+  .modal-footer {
+    padding: 4px 10px;
+  }
+}
 </style>

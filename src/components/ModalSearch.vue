@@ -336,4 +336,50 @@ export default {
   font-size: 0.72rem;
   font-weight: 700;
 }
+
+@media (max-width: 640px) {
+  .search-modal {
+    width: 98vw;
+    max-height: 92vh;
+  }
+  .modal-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .products-table th, .products-table td {
+    padding: 6px 8px;
+    font-size: 0.72rem;
+  }
+  .products-table th:nth-child(3), .products-table td:nth-child(3) {
+    display: none; /* Hide category on narrow phones to fit price and action cleanly */
+  }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .search-modal {
+    max-height: 96vh;
+    max-height: 96dvh;
+    width: 95vw;
+  }
+  .modal-header {
+    padding: 4px 10px;
+  }
+  .modal-subtitle {
+    display: none;
+  }
+  .modal-search-bar {
+    padding: 4px 8px;
+  }
+  .modal-table-wrap {
+    max-height: calc(96vh - 90px);
+    overflow-y: auto;
+  }
+  .products-table th, .products-table td {
+    padding: 4px 6px;
+    font-size: 0.7rem;
+  }
+  .modal-footer {
+    padding: 4px 10px;
+  }
+}
 </style>
